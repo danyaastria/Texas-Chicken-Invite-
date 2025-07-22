@@ -4,12 +4,9 @@ const inviteMessage = document.getElementById("invite-message");
 const cluckSound = document.getElementById("cluck-sound");
 const cheerSound = document.getElementById("cheer-sound");
 
-function moveChicken() {
-  // Play cluck sound BEFORE moving the chicken
-  cluckSound.play().catch(() => {
-    // Ignore if sound play is blocked
-  });
+let moveInterval;
 
+function moveChicken() {
   const maxX = gameArea.clientWidth - chicken.clientWidth;
   const maxY = gameArea.clientHeight - chicken.clientHeight;
 
@@ -20,21 +17,38 @@ function moveChicken() {
   chicken.style.top = newY + "px";
 }
 
-// When the chicken is clicked (caught)
+// Start cluck sound loop (use audio loop property)
+cluckSound.loop = true;
+
+function startGame() {
+  // Start cluck sound immediately
+  cluckSound.play().catch(() => {
+    // Sound might be blocked until user interaction - ignore errors
+  });
+
+  // Move chicken every 500ms
+  moveChicken();
+  moveInterval = setInterval(moveChicken, 500);
+}
+
+// Handle click on chicken
 chicken.addEventListener("click", () => {
-  // Stop moving the chicken by clearing the interval
+  // Stop chicken movement
   clearInterval(moveInterval);
 
-  // Hide the chicken
+  // Hide chicken image
   chicken.style.display = "none";
 
-  // Show the invitation message
+  // Show invite message
   inviteMessage.classList.remove("hidden");
 
-  // Play cheer sound on catch
+  // Stop cluck sound
+  cluckSound.pause();
+  cluckSound.currentTime = 0;
+
+  // Play cheer sound once
   cheerSound.play().catch(() => {});
 });
 
-// Start moving chicken every 500ms
-moveChicken();
-const moveInterval = setInterval(moveChicken, 500);
+// Start game on page load or script load
+startGame();
